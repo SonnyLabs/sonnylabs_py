@@ -1,4 +1,4 @@
-# SonnyLabs Python Client
+# Detect Prompt Injections & PII in AI agents using SonnyLabs Python Client
 
 Detect prompt injections and PII in real-time in your AI applications using the SonnyLabs REST API.
 
@@ -169,7 +169,7 @@ response = "I'm an AI assistant, nice to meet you John!"
 output_result = client.analyze_text(response, scan_type="output", tag=tag)
 ```
 
-Integrating with a Chatbot
+## Integrating with a Chatbot
 Here's how to integrate the SDK into a Python chatbot to detect prompt injections and PII:
 
 ### Set up the client
@@ -247,11 +247,12 @@ SonnyLabsClient(api_token, base_url, analysis_id, timeout=5)
 ```
 
 Parameters:
-
+```
 api_token (str): Your SonnyLabs API token
 base_url (str): Base URL for the SonnyLabs API
 analysis_id (str): The analysis ID associated with your application
 timeout (int, optional): Request timeout in seconds (default: 5)
+```
 
 ### Methods
 #### analyze_text
