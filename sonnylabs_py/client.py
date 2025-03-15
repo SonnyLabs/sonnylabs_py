@@ -12,9 +12,9 @@ class SonnyLabsClient:
         Initialize a SonnyLabs API client for a specific chatbot application
         
         Args:
-            api_token: Your SonnyLabs API token
+            api_token: Your SonnyLabs API token (recommended to load from .env as SONNYLABS_API_TOKEN)
             base_url: Base URL for the SonnyLabs API
-            analysis_id: The analysis ID associated with this chatbot (from website UI)
+            analysis_id: The analysis ID associated with this chatbot (from website UI, recommended to load from .env as SONNYLABS_ANALYSIS_ID)
             timeout: Request timeout in seconds (default: 5)
         """
         self.api_token = api_token
@@ -30,19 +30,23 @@ class SonnyLabsClient:
         random_suffix = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         return f"{self.analysis_id}_{timestamp}_{random_suffix}"
     
-    def analyze_text(self, text, scan_type="input"):
+    def analyze_text(self, text, scan_type="input", tag=None):
         """
         Analyze text for security concerns
         
         Args:
             text: Text to analyze (from chatbot)
             scan_type: Either "input" or "output"
+            tag: Optional tag to use for this analysis. If provided, this exact tag will be used instead of generating a new one. Useful for linking prompts with their responses.
         
         Returns:
             Dictionary with analysis results
         """
         try:
-            tag = self._generate_tag()
+            # Use provided tag or generate a new one if none provided
+            if tag is None:
+                tag = self._generate_tag()
+            
             logger.info(f"Analyzing {scan_type} content with tag '{tag}'")
             
             url = f"{self.base_url}/v1/analysis/{self.analysis_id}"
@@ -86,28 +90,48 @@ class SonnyLabsClient:
                 "analysis": []
             }
     
-    def get_prompt_injections(self, analysis_result):
+    def get_prompt_injections(self, analysis_result, threshold=0.65):
         """
         Extract prompt injection issues from analysis results
         
         Args:
             analysis_result: The result dictionary from analyze_text
+            threshold: The confidence threshold above which to consider a prompt injection detected (default: 0.65)
             
         Returns:
-            Dictionary with prompt injection score or None if no issue
+            Dictionary with prompt injection score and detection status or None if no issue
         """
         if not analysis_result["success"]:
             return None
             
         for item in analysis_result["analysis"]:
             if item["type"] == "score" and item["name"] == "prompt_injection":
+                score = item["result"]
                 return {
-                    "score": item["result"],
-                    "tag": analysis_result["tag"]
+                    "score": score,
+                    "tag": analysis_result["tag"],
+                    "detected": score > threshold,
+                    "threshold": threshold
                 }
                 
         return None
     
+    def is_prompt_injection(self, analysis_result, threshold=0.65):
+        """
+        Directly check if prompt injection was detected in analysis results
+        
+        Args:
+            analysis_result: The result dictionary from analyze_text
+            threshold: The confidence threshold above which to consider a prompt injection detected (default: 0.65)
+            
+        Returns:
+            Boolean: True if prompt injection was detected above threshold, False otherwise
+        """
+        injection_info = self.get_prompt_injections(analysis_result, threshold)
+        if injection_info is None:
+            return False
+        return injection_info["detected"]
+        
     def get_pii(self, analysis_result):
         """
         Extract PII issues from analysis results
