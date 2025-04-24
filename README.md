@@ -8,6 +8,7 @@ Detect prompt injections and PII in real-time in your AI applications using the 
 - [Security Risks in AI Applications](#security-risks-in-ai-applications)
 - [Installation](#installation)
 - [Pre-requisites](#pre-requisites)
+- [Quick 3-Step Integration](#quick-3-step-integration)
 - [Prompt to Integrate SonnyLabs to your AI application](#prompt-to-integrate-sonnylabs-to-your-ai-application)
 - [Example](#example)
 - [API Reference](#api-reference)
@@ -87,7 +88,7 @@ These are the pre-requisites for this package and to use the SonnyLabs REST API.
 - [A Sonnylabs account](https://sonnylabs-service.onrender.com)
 - [A SonnyLabs API token](https://sonnylabs-service.onrender.com/analysis/api-keys)
 - [A SonnyLabs analysis ID](https://sonnylabs-service.onrender.com/analysis)   
-- A `.env` file, or secrets manager, to store your API token and analysis ID
+- Securely store your API token and analysis ID (we recommend using a secure method like environment variables or a secrets manager)
 
 ### To register to SonnyLabs
 
@@ -98,25 +99,151 @@ These are the pre-requisites for this package and to use the SonnyLabs REST API.
 1. Go to [API Keys](https://sonnylabs-service.onrender.com/analysis/api-keys).
 2. Select + Generate New API Key.
 3. Copy the generated API key.
-4. Paste the API key into your .env file (or secrets manager), and name it SONNYLABS_API_TOKEN.
+4. Store this API token securely for use in your application.
 
 ### To get a SonnyLabs analysis ID:
 1. Go to [Analysis](https://sonnylabs-service.onrender.com/analysis).
 2. Create a new analysis and name it after the AI application/AI agent you will be protecting.
 3. After you press Submit, you will be brought to the empty analysis page.
 4. The analysis ID is the last part of the URL, like https://sonnylabs-service.onrender.com/analysis/{analysis_id}. Note that the analysis ID can also be found in the [SonnyLabs analysis dashboard](https://sonnylabs-service.onrender.com/analysis).
-5. Copy the analysis ID and paste it into your AI application's .env file (or secrets manager), and name it SONNYLABS_ANALYSIS_ID.
+5. Store this analysis ID securely for use in your application.
 
-### Setting up your .env file
-Create a `.env` file in your project root directory with the following content:
-```
-SONNYLABS_API_TOKEN=your_api_token_here
-SONNYLABS_ANALYSIS_ID=your_analysis_id_here
+> **Note:** We recommend storing your API token and analysis ID securely using environment variables or a secrets manager, not hardcoded in your application code.
+
+## Easy 3-Step Integration
+
+Getting started with SonnyLabs is simple. The most important function to know is `analyze_text()`, which is the core method for analyzing content for security risks.
+
+### 1. Install and initialize the client
+
+```python
+# Install the SDK
+pip install git+https://github.com/SonnyLabs/sonnylabs_py
+
+# In your application
+from sonnylabs_py import SonnyLabsClient
+
+# Initialize the client with your securely stored credentials
+client = SonnyLabsClient(
+    api_key="YOUR_API_TOKEN",  # Replace with your actual token or use a secure method to retrieve it
+    analysis_id="YOUR_ANALYSIS_ID",  # Replace with your actual ID or use a secure method to retrieve it
+    base_url="https://sonnylabs-service.onrender.com"  # Optional, this is the default value
+)
 ```
 
-To load these environment variables in your Python application, you can use the `python-dotenv` package:
-```bash
-pip install python-dotenv
+### 2. Analyze input/output with a single function call
+
+```python
+# Analyze user input
+input_result = client.analyze_text("User message here", scan_type="input")
+
+# Check for risks using helper methods
+if client.has_risks(input_result) or client.is_toxic(input_result):
+    # Handle risky input
+    print("Security risk detected in input")
+
+# Later, analyze AI response
+output_result = client.analyze_text("AI response here", scan_type="output", tag=input_result["tag"])
+```
+
+### 3. Use specialized helper methods for specific checks
+
+```python
+# Check for specific types of risks
+if client.has_pii(input_result):
+    print("PII detected!")
+    # Process PII information: input_result["analysis"][1]["result"]
+
+if client.is_prompt_relevant(output_result):
+    print("Response is relevant to the prompt")
+else:
+    print("Response might be off-topic")
+```
+
+For more advanced usage and complete examples, see the sections below.
+
+## API Reference
+
+This section documents all functions available in the SonnyLabsClient, their parameters, return values, and usage.
+
+### Initialization
+
+```python
+SonnyLabsClient(api_token, base_url, analysis_id, timeout=5)
+```
+
+**Parameters:**
+- `api_token` (str, **required**): Your SonnyLabs API token.
+- `base_url` (str, **required**): Base URL for the SonnyLabs API (e.g., "https://sonnylabs-service.onrender.com").
+- `analysis_id` (str, **required**): The analysis ID associated with your application.
+- `timeout` (int, optional): Request timeout in seconds. Default is 5 seconds.
+
+### Core Analysis Method
+
+#### `analyze_text(text, scan_type="input", tag=None)`
+
+**Description:** The primary method for analyzing text content for security risks.
+
+**Parameters:**
+- `text` (str, **required**): The text content to analyze.
+- `scan_type` (str, optional): Either "input" (user message) or "output" (AI response). Default is "input".
+- `tag` (str, optional): A unique identifier for linking related analyses. If not provided, one will be generated.
+
+**Returns:** Dictionary with analysis results:
+```python
+{
+    "success": True,  # Whether the API call was successful
+    "tag": "unique_tag",  # The tag used for this analysis
+    "analysis": [  # Array of analysis results
+        {"type": "score", "name": "prompt_injection", "result": 0.8},
+        {"type": "PII", "result": [{"label": "EMAIL", "text": "example@email.com"}, ...]}
+        # Potentially other analysis types
+    ]
+}
+```
+
+### Helper Methods
+
+#### `get_prompt_injections(analysis_result, threshold=0.65)`
+
+**Description:** Extracts prompt injection details from analysis results.
+
+**Parameters:**
+- `analysis_result` (dict, **required**): The result dictionary from analyze_text.
+- `threshold` (float, optional): The confidence threshold above which to consider a prompt injection detected. Default is 0.65.
+
+**Returns:** Dictionary with prompt injection information or None if no issue:
+```python
+{
+    "score": 0.8,  # Confidence score between 0 and 1
+    "tag": "unique_tag",  # The tag from the analysis
+    "detected": True,  # Whether the score exceeds the threshold
+    "threshold": 0.65  # The threshold used
+}
+```
+
+#### `is_prompt_injection(analysis_result, threshold=0.65)`
+
+**Description:** Directly checks if prompt injection was detected above the threshold.
+
+**Parameters:** Same as `get_prompt_injections()`.
+
+**Returns:** Boolean indicating whether prompt injection was detected.
+
+#### `get_pii(analysis_result)`
+
+**Description:** Extracts PII (Personally Identifiable Information) details from analysis results.
+
+**Parameters:**
+- `analysis_result` (dict, **required**): The result dictionary from analyze_text.
+
+**Returns:** List of PII items found or empty list if none:
+```python
+[
+    {"label": "EMAIL", "text": "example@email.com", "tag": "unique_tag"},
+    {"label": "PHONE", "text": "123-456-7890", "tag": "unique_tag"}
+    # Additional PII items...
+]
 ```
 
 ## Prompt to Integrate SonnyLabs to your AI application
@@ -149,21 +276,18 @@ from sonnylabs_py import SonnyLabsClient
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Initialize the client
+# Initialize the client with your securely stored credentials
 client = SonnyLabsClient(
-    api_token=os.environ.get("SONNYLABS_API_TOKEN"),
-    base_url="https://sonnylabs-service.onrender.com",
-    analysis_id=os.environ.get("SONNYLABS_ANALYSIS_ID")
+    api_token="YOUR_API_TOKEN",  # Replace with your actual token or use a secure method to retrieve it
+    analysis_id="YOUR_ANALYSIS_ID",  # Replace with your actual ID or use a secure method to retrieve it
+    base_url="https://sonnylabs-service.onrender.com"  
 )
 
 # Analyze text for security issues (input)
 result = client.analyze_text("Hello, my name is John Doe", scan_type="input")
 print(result)
 
-# If you want to link an input with its corresponding output, reuse the tag:
+# If you want to link an input with its corresponding output, change the scan_type from "input" to "output" but reuse the tag:
 tag = result["tag"]
 response = "I'm an AI assistant, nice to meet you John!"
 output_result = client.analyze_text(response, scan_type="output", tag=tag)
@@ -178,14 +302,11 @@ from sonnylabs_py import SonnyLabsClient
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Initialize the SonnyLabs client
+# Initialize the SonnyLabs client with your securely stored credentials
 sonnylabs_client = SonnyLabsClient(
-    api_token=os.environ.get("SONNYLABS_API_TOKEN"),  # Your API token from .env
-    base_url="https://sonnylabs-service.onrender.com",              # SonnyLabs API endpoint
-    analysis_id=os.environ.get("SONNYLABS_ANALYSIS_ID") # Your analysis ID from .env
+    api_token="YOUR_API_TOKEN",  # Replace with your actual token or use a secure method to retrieve it
+    base_url="https://sonnylabs-service.onrender.com",  # SonnyLabs API endpoint
+    analysis_id="YOUR_ANALYSIS_ID"  # Replace with your actual ID or use a secure method to retrieve it
 )
 ```
 
@@ -222,116 +343,7 @@ def generate_bot_response(user_message):
     return "This is the chatbot's response"
 ```
 
-### Integrate with a web framework (e.g., Flask)
 
-```python 
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route("/chat", methods=["POST"])
-def chat():
-    user_message = request.json.get("message", "")
-    response = handle_user_message(user_message)
-    return jsonify({"response": response})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-```
-
-### API Reference
-SonnyLabsClient
-
-```python
-SonnyLabsClient(api_token, base_url, analysis_id, timeout=5)
-```
-
-Parameters:
-```
-api_token (str): Your SonnyLabs API token
-base_url (str): Base URL for the SonnyLabs API
-analysis_id (str): The analysis ID associated with your application
-timeout (int, optional): Request timeout in seconds (default: 5)
-```
-
-### Methods
-#### analyze_text
-
-```python
-analyze_text(text, scan_type="input", tag=None)
-```
-
-Parameters:
-
-    text (str): Text to analyze
-    scan_type (str, optional): "input" or "output" (default: "input")
-    tag (str, optional): Custom tag for linking prompts with their responses (default: None)
-
-Returns:
-
-    dict: Analysis results, including the tag used
-
-### Linking Prompts and Responses
-
-To properly link prompts with their corresponding responses in the SonnyLabs dashboard, use the same tag for both analyses, but ensure to update the scan_type to be either input (by the user) or output (by the LLM):
-
-```python
-# Analyze the user input (prompt)
-input_result = sonnylabs_client.analyze_text(user_message, scan_type="input")
-
-# Extract the tag from the input analysis
-tag = input_result["tag"]
-
-# Generate your response
-bot_response = generate_bot_response(user_message)
-
-# Analyze the output using the same tag
-output_result = sonnylabs_client.analyze_text(bot_response, scan_type="output", tag=tag)
-```
-
-This ensures that prompts and their responses are linked in the SonnyLabs dashboard and analytics.
-
-#### get_prompt_injections
-
-```python
-get_prompt_injections(analysis_result)
-```
-
-Parameters:
-
-    analysis_result (dict): Analysis results from analyze_text
-
-Returns:
-
-    dict: Prompt injection information including detection status, or None if no issue
-
-#### is_prompt_injection
-
-```python
-is_prompt_injection(analysis_result)
-```
-
-Parameters:
-
-    analysis_result (dict): Analysis results from analyze_text
-
-Returns:
-
-    bool: True if prompt injection was detected, False otherwise
-
-#### get_pii
-
-```python
-get_pii(analysis_result)
-```
-
-Parameters:
-
-    analysis_result (dict): Analysis results from analyze_text
-
-Returns:
-
-    list: List of PII items found or empty list if none
 
 ### License
 This project is licensed under the MIT License - see the LICENSE file for details.

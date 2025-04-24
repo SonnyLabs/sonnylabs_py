@@ -3,3 +3,5 @@ __pycache__
 -egg-info
 sonnylabs_py.egg-info
 .env
+venv/
+test-sonnylabs.py
