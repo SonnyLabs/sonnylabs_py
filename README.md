@@ -1,10 +1,10 @@
-# Detect Prompt Injections & PII in AI agents using SonnyLabs Python Client
+# AI Security Scanner: Test Your AI Applications for Prompt Injection Vulnerabilities
 
-Detect prompt injections and PII in real-time in your AI applications using the SonnyLabs REST API.
+Test your AI chatbots and agents for prompt injection vulnerabilities using the SonnyLabs scanning service. Receive a comprehensive vulnerability report by email within 24 hours.
 
 ## Table of Contents
 
-- [About](#about)  
+- [About](#about)
 - [Security Risks in AI Applications](#security-risks-in-ai-applications)
 - [Installation](#installation)
 - [Pre-requisites](#pre-requisites)
@@ -14,12 +14,23 @@ Detect prompt injections and PII in real-time in your AI applications using the 
 - [API Reference](#api-reference)
 - [License](#license)
 
-
 ## About
 
-SonnyLabs.ai is a cybersecurity REST API that provides security protection for AI applications. It can be used to detect the risk of prompt injection and PII in prompts and LLM responses, especially useful for securing AI applications and AI agents.
+SonnyLabs.ai is a cybersecurity testing service that scans AI applications for prompt injection vulnerabilities. Our scanner analyzes both user inputs and AI outputs to identify security weaknesses in your AI chatbots and agents. After testing, you'll receive a comprehensive vulnerability report by email within 24 hours.
 
-This package is a simple Python client for the SonnyLabs REST API. There are 10,000 free requests to the REST API per month.
+This package is a simple Python client for the SonnyLabs vulnerability scanning service. There are 10,000 free scanning requests per month for testing your AI applications.
+
+## When to Use SonnyLabs
+
+SonnyLabs is designed specifically for the **testing phase** of your AI development lifecycle, not for production deployment with real users. Implement this tool:
+
+- During pre-deployment security testing
+- In dedicated QA/testing environments
+- As part of your CI/CD pipeline for automated security testing
+- When conducting penetration testing of your AI application
+- Before releasing new AI features or models
+
+The goal is to identify and address prompt injection vulnerabilities before your AI application goes live, enhancing your security posture proactively rather than monitoring production traffic.
 
 ## Security Risks in AI Applications 
 
@@ -32,18 +43,9 @@ Risks associated with prompt injections:
 - Causing the LLM to perform unauthorized actions
 - Compromising application security
 
-### PII
-PII (Personally Identifiable Information) refers to any information that can be used to identify an individual, such as their name, email address, phone number, or social security number.
+The SonnyLabs vulnerability scanner provides a way to test your AI applications for prompt injection vulnerabilities without disrupting user interactions. You'll receive a comprehensive vulnerability report by email within 24 hours, detailing any security weaknesses found in both user inputs and AI responses.
 
-Risks associated with PII:
-- Unauthorized access to personal information
-- Data breaches and identity theft
-- Unauthorized disclosure of sensitive information
-- Unauthorized modification of personal data
-
-The SonnyLabs REST API provides a way to detect prompt injections and PII in real-time in your AI applications. 
-
-## REST API output example
+## REST API output example on the input prompt
 
 ```json 
 {
@@ -52,12 +54,6 @@ The SonnyLabs REST API provides a way to detect prompt injections and PII in rea
       "type": "score",
       "name": "prompt_injection",
       "result": 0.99
-    },    {
-      "type": "PII",
-      "result": [
-        {"label": "EMAIL", "text": "example@email.com"},
-        {"label": "PHONE", "text": "123-456-7890"}
-      ]
     }
   ],
   "tag": "unique-request-identifier"
@@ -86,31 +82,33 @@ These are the pre-requisites for this package and to use the SonnyLabs REST API.
 - Python 3.7 or higher
 - An AI application/AI agent to integrate SonnyLabs with
 - [A Sonnylabs account](https://sonnylabs-service.onrender.com)
-- [A SonnyLabs API token](https://sonnylabs-service.onrender.com/analysis/api-keys)
+- [A SonnyLabs API key](https://sonnylabs-service.onrender.com/analysis/api-keys)
 - [A SonnyLabs analysis ID](https://sonnylabs-service.onrender.com/analysis)   
-- Securely store your API token and analysis ID (we recommend using a secure method like environment variables or a secrets manager)
+- Securely store your API key and analysis ID (we recommend using a secure method like environment variables or a secrets manager)
 
 ### To register to SonnyLabs
 
 1. Go to https://sonnylabs-service.onrender.com and register. 
 2. Confirm your email address, and login to your new SonnyLabs account.
 
-### To get a SonnyLabs API token:
+### To get a SonnyLabs API key:
 1. Go to [API Keys](https://sonnylabs-service.onrender.com/analysis/api-keys).
 2. Select + Generate New API Key.
 3. Copy the generated API key.
-4. Store this API token securely for use in your application.
+4. Store this API key securely for use in your application.
 
 ### To get a SonnyLabs analysis ID:
 1. Go to [Analysis](https://sonnylabs-service.onrender.com/analysis).
-2. Create a new analysis and name it after the AI application/AI agent you will be protecting.
+2. Create a new analysis and name it after the AI application/AI agent you will be auditing.
 3. After you press Submit, you will be brought to the empty analysis page.
 4. The analysis ID is the last part of the URL, like https://sonnylabs-service.onrender.com/analysis/{analysis_id}. Note that the analysis ID can also be found in the [SonnyLabs analysis dashboard](https://sonnylabs-service.onrender.com/analysis).
 5. Store this analysis ID securely for use in your application.
 
-> **Note:** We recommend storing your API token and analysis ID securely using environment variables or a secrets manager, not hardcoded in your application code.
+> **Note:** We recommend storing your API key and analysis ID securely using environment variables or a secrets manager, not hardcoded in your application code.
 
-## Easy 3-Step Integration
+> **Performance:** The SonnyLabs service operates with sub-200ms latency (one fifth of a second) per prompt input or AI output, ensuring minimal impact on your application's performance while collecting data for vulnerability analysis.
+
+## Quick 3-Step Integration
 
 Getting started with SonnyLabs is simple. The most important function to know is `analyze_text()`, which is the core method for analyzing content for security risks.
 
@@ -125,7 +123,7 @@ from sonnylabs_py import SonnyLabsClient
 
 # Initialize the client with your securely stored credentials
 client = SonnyLabsClient(
-    api_key="YOUR_API_TOKEN",  # Replace with your actual token or use a secure method to retrieve it
+    api_key="YOUR_API_KEY",  # Replace with your actual API key or use a secure method to retrieve it
     analysis_id="YOUR_ANALYSIS_ID",  # Replace with your actual ID or use a secure method to retrieve it
     base_url="https://sonnylabs-service.onrender.com"  # Optional, this is the default value
 )
@@ -134,30 +132,16 @@ client = SonnyLabsClient(
 ### 2. Analyze input/output with a single function call
 
 ```python
-# Analyze user input
+# Send user input to the SonnyLabs API without showing results to users
 input_result = client.analyze_text("User message here", scan_type="input")
 
-# Check for risks using helper methods
-if client.has_risks(input_result) or client.is_toxic(input_result):
-    # Handle risky input
-    print("Security risk detected in input")
+# Process the message normally (no blocking)
+ai_response = "AI response here"
 
-# Later, analyze AI response
-output_result = client.analyze_text("AI response here", scan_type="output", tag=input_result["tag"])
-```
+# Link AI response with the input using the same tag
+output_result = client.analyze_text(ai_response, scan_type="output", tag=input_result["tag"])
 
-### 3. Use specialized helper methods for specific checks
-
-```python
-# Check for specific types of risks
-if client.has_pii(input_result):
-    print("PII detected!")
-    # Process PII information: input_result["analysis"][1]["result"]
-
-if client.is_prompt_relevant(output_result):
-    print("Response is relevant to the prompt")
-else:
-    print("Response might be off-topic")
+# All analysis happens on the backend and results are available in your SonnyLabs dashboard
 ```
 
 For more advanced usage and complete examples, see the sections below.
@@ -169,16 +153,16 @@ This section documents all functions available in the SonnyLabsClient, their par
 ### Initialization
 
 ```python
-SonnyLabsClient(api_token, base_url, analysis_id, timeout=5)
+SonnyLabsClient(api_key, base_url, analysis_id, timeout=5)
 ```
 
 **Parameters:**
-- `api_token` (str, **required**): Your SonnyLabs API token.
+- `api_key` (str, **required**): Your SonnyLabs API key (previously called api_token, both are supported for backward compatibility).
 - `base_url` (str, **required**): Base URL for the SonnyLabs API (e.g., "https://sonnylabs-service.onrender.com").
 - `analysis_id` (str, **required**): The analysis ID associated with your application.
 - `timeout` (int, optional): Request timeout in seconds. Default is 5 seconds.
 
-### Core Analysis Method
+### Core Analysis Methods
 
 #### `analyze_text(text, scan_type="input", tag=None)`
 
@@ -195,79 +179,38 @@ SonnyLabsClient(api_token, base_url, analysis_id, timeout=5)
     "success": True,  # Whether the API call was successful
     "tag": "unique_tag",  # The tag used for this analysis
     "analysis": [  # Array of analysis results
-        {"type": "score", "name": "prompt_injection", "result": 0.8},
-        {"type": "PII", "result": [{"label": "EMAIL", "text": "example@email.com"}, ...]}
-        # Potentially other analysis types
+        {"type": "score", "name": "prompt_injection", "result": 0.8}
     ]
 }
 ```
 
-### Helper Methods
+### Analysis
 
-#### `get_prompt_injections(analysis_result, threshold=0.65)`
+All prompt injection analysis is performed on the SonnyLabs backend. You only need to submit your data using the `analyze_text` function. Results will be available in your SonnyLabs dashboard after analysis is complete.
 
-**Description:** Extracts prompt injection details from analysis results.
 
-**Parameters:**
-- `analysis_result` (dict, **required**): The result dictionary from analyze_text.
-- `threshold` (float, optional): The confidence threshold above which to consider a prompt injection detected. Default is 0.65.
-
-**Returns:** Dictionary with prompt injection information or None if no issue:
-```python
-{
-    "score": 0.8,  # Confidence score between 0 and 1
-    "tag": "unique_tag",  # The tag from the analysis
-    "detected": True,  # Whether the score exceeds the threshold
-    "threshold": 0.65  # The threshold used
-}
-```
-
-#### `is_prompt_injection(analysis_result, threshold=0.65)`
-
-**Description:** Directly checks if prompt injection was detected above the threshold.
-
-**Parameters:** Same as `get_prompt_injections()`.
-
-**Returns:** Boolean indicating whether prompt injection was detected.
-
-#### `get_pii(analysis_result)`
-
-**Description:** Extracts PII (Personally Identifiable Information) details from analysis results.
-
-**Parameters:**
-- `analysis_result` (dict, **required**): The result dictionary from analyze_text.
-
-**Returns:** List of PII items found or empty list if none:
-```python
-[
-    {"label": "EMAIL", "text": "example@email.com", "tag": "unique_tag"},
-    {"label": "PHONE", "text": "123-456-7890", "tag": "unique_tag"}
-    # Additional PII items...
-]
-```
 
 ## Prompt to Integrate SonnyLabs to your AI application
 Here is an example prompt to give to your IDE's LLM (Cursor, VSCode, Windsurf etc) to integrate the Sonnylabs REST API to your AI application.
 
 ```
-As an expert AI developer, help me integrate SonnyLabs security features into my existing AI application.
+As an expert AI developer, help me integrate SonnyLabs security auditing into my existing AI application.
 
-I need to implement the following security measures:
-1. Block prompt injections in both user inputs and AI outputs
-2. Detect (but not block) PII in both user inputs and AI outputs
-3. Link user prompts with AI responses in the SonnyLabs dashboard for monitoring
+I need to implement vulnerability scanning for my AI application:
+1. Send test user inputs to SonnyLabs for vulnerability analysis
+2. Send my AI's responses to SonnyLabs for security testing
+3. Link user prompts with AI responses to identify potential vulnerabilities
 
-I've already installed the SonnyLabs Python SDK using pip and have my API token and analysis ID from the SonnyLabs dashboard.
+I've already installed the SonnyLabs Python SDK using pip and have my API key and analysis ID from the SonnyLabs dashboard.
 
 Please provide a step-by-step implementation guide including:
-- How to initialize the SonnyLabs client
-- How to analyze user inputs before passing them to my LLM
-- How to block requests if prompt injections are detected
-- How to detect and log PII in user inputs (without blocking)
-- How to analyze AI outputs before sending them to users
-- How to block AI responses if they contain prompt injections
-- How to detect and log PII in AI outputs (without blocking)
-- How to properly use the 'tag' parameter to link prompts with their responses in the SonnyLabs dashboard
+- How to initialize the SonnyLabs vulnerability scanner client
+- How to send test inputs to SonnyLabs for security analysis
+- How to send AI outputs to SonnyLabs for vulnerability detection
+- How to properly use the 'tag' parameter to link prompts with their responses
+- How to integrate this testing process with minimal code changes
+
+Note: I understand that all vulnerability reports will be sent by email within 24 hours and I don't need to process any results directly in my application.
 ```
 
 ### Quick Start
@@ -276,25 +219,30 @@ from sonnylabs_py import SonnyLabsClient
 import os
 from dotenv import load_dotenv
 
+# Load API key from environment (recommended)
+load_dotenv()
+api_key = os.getenv("SONNYLABS_API_KEY")
+analysis_id = os.getenv("SONNYLABS_ANALYSIS_ID")
+
 # Initialize the client with your securely stored credentials
 client = SonnyLabsClient(
-    api_token="YOUR_API_TOKEN",  # Replace with your actual token or use a secure method to retrieve it
-    analysis_id="YOUR_ANALYSIS_ID",  # Replace with your actual ID or use a secure method to retrieve it
+    api_key=api_key,
+    analysis_id=analysis_id,
     base_url="https://sonnylabs-service.onrender.com"  
 )
 
-# Analyze text for security issues (input)
-result = client.analyze_text("Hello, my name is John Doe", scan_type="input")
-print(result)
+# Analyze text for prompt injection risk (input)
+result = client.analyze_text("Hello, how can I help you today?", scan_type="input")
+print(f"Prompt injection score: {result['analysis'][0]['result']}")
 
 # If you want to link an input with its corresponding output, change the scan_type from "input" to "output" but reuse the tag:
 tag = result["tag"]
-response = "I'm an AI assistant, nice to meet you John!"
+response = "I'm an AI assistant, I'd be happy to help!"
 output_result = client.analyze_text(response, scan_type="output", tag=tag)
 ```
 
 ## Integrating with a Chatbot
-Here's how to integrate the SDK into a Python chatbot to detect prompt injections and PII:
+Here's how to integrate the SDK into a Python chatbot to audit all security risks without blocking any messages:
 
 ### Set up the client
 ```python 
@@ -302,39 +250,34 @@ from sonnylabs_py import SonnyLabsClient
 import os
 from dotenv import load_dotenv
 
+# Load environment variables (recommended)
+load_dotenv()
+
 # Initialize the SonnyLabs client with your securely stored credentials
 sonnylabs_client = SonnyLabsClient(
-    api_token="YOUR_API_TOKEN",  # Replace with your actual token or use a secure method to retrieve it
-    base_url="https://sonnylabs-service.onrender.com",  # SonnyLabs API endpoint
-    analysis_id="YOUR_ANALYSIS_ID"  # Replace with your actual ID or use a secure method to retrieve it
+    api_key=os.getenv("SONNYLABS_API_KEY"),
+    analysis_id=os.getenv("SONNYLABS_ANALYSIS_ID"),
+    base_url="https://sonnylabs-service.onrender.com"
 )
 ```
 
-### Implement message handling with security checks
+### Implement message handling with audit-only logging
 
 ```python 
 def handle_user_message(user_message):
-    # Step 1: Analyze the incoming message for security issues
+    # Step 1: Send the user message to SonnyLabs (silently, no user-facing results)
     analysis_result = sonnylabs_client.analyze_text(user_message, scan_type="input")
     
-    # Step 2: Check for prompt injections
-    if sonnylabs_client.is_prompt_injection(analysis_result):
-        return "I detected potential prompt injection in your message. Please try again."
-    
-    # Step 3: Check for PII
-    pii_items = sonnylabs_client.get_pii(analysis_result)
-    if pii_items:
-        pii_types = [item["label"] for item in pii_items]
-        return f"I detected personal information ({', '.join(pii_types)}) in your message. Please don't share sensitive data."
-    
-    # Step 4: If no security issues are found, process the message normally
+    # Step 2: Process the message normally
     bot_response = generate_bot_response(user_message)
     
-    # Step 5: Scan the outgoing message using the same tag to link it with the input
+    # Step 3: Send the AI response using the same tag to link it with the input
     tag = analysis_result["tag"]  # Reuse the tag from the input analysis
-    output_analysis = sonnylabs_client.analyze_text(bot_response, scan_type="output", tag=tag)
-    # Apply additional checks to bot_response if needed
+    sonnylabs_client.analyze_text(bot_response, scan_type="output", tag=tag)
     
+    # No need to process any results as everything is analyzed on the backend
+    
+    # Always return the response (audit-only mode)
     return bot_response
 
 def generate_bot_response(user_message):
@@ -342,8 +285,6 @@ def generate_bot_response(user_message):
     # This could be a call to an LLM API or other response generation logic
     return "This is the chatbot's response"
 ```
-
-
 
 ### License
 This project is licensed under the MIT License - see the LICENSE file for details.
