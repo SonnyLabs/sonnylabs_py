@@ -132,25 +132,3 @@ class SonnyLabsClient:
             return False
         return injection_info["detected"]
         
-    def get_pii(self, analysis_result):
-        """
-        Extract PII issues from analysis results
-        
-        Args:
-            analysis_result: The result dictionary from analyze_text
-            
-        Returns:
-            List of PII items found or empty list if none
-        """
-        if not analysis_result["success"]:
-            return []
-            
-        for item in analysis_result["analysis"]:
-            if item["type"] == "PII":
-                return [{
-                    "label": pii_item["label"],
-                    "text": pii_item["text"],
-                    "tag": analysis_result["tag"]
-                } for pii_item in item["result"]]
-                
-        return []
