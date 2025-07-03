@@ -255,7 +255,7 @@ load_dotenv()
 
 # Initialize the SonnyLabs client with your securely stored credentials
 sonnylabs_client = SonnyLabsClient(
-    api_key=os.getenv("SONNYLABS_API_KEY"),
+    api_token=os.getenv("SONNYLABS_API_TOKEN"),
     analysis_id=os.getenv("SONNYLABS_ANALYSIS_ID"),
     base_url="https://sonnylabs-service.onrender.com"
 )
