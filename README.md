@@ -125,7 +125,7 @@ Getting started with SonnyLabs is simple. The most important function to know is
 pip install sonnylabs
 
 # In your application
-from sonnylabs_py import SonnyLabsClient
+from sonnylabs import SonnyLabsClient
 
 # Initialize the client with your securely stored credentials
 client = SonnyLabsClient(
@@ -221,7 +221,7 @@ Note: I understand that all vulnerability reports will be sent by email within 2
 
 ### Quick Start
 ```python
-from sonnylabs_py import SonnyLabsClient
+from sonnylabs import SonnyLabsClient
 import os
 from dotenv import load_dotenv
 
@@ -252,7 +252,7 @@ Here's how to integrate the SDK into a Python chatbot to audit all security risk
 
 ### Set up the client
 ```python 
-from sonnylabs_py import SonnyLabsClient
+from sonnylabs import SonnyLabsClient
 import os
 from dotenv import load_dotenv
 

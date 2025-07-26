@@ -10,7 +10,7 @@ into a simple console-based chatbot to:
 3. Link prompts with their responses in the SonnyLabs dashboard
 
 Requires:
-- sonnylabs_py package installed
+- sonnylabs package installed
 - A .env file with SONNYLABS_API_TOKEN and SONNYLABS_ANALYSIS_ID
 - An LLM provider (uses a mock one for this example)
 """
@@ -18,7 +18,7 @@ Requires:
 import os
 import sys
 from dotenv import load_dotenv
-from sonnylabs_py import SonnyLabsClient
+from sonnylabs import SonnyLabsClient
 
 # Mock LLM client for demonstration purposes
 # In a real application, replace this with your actual LLM client

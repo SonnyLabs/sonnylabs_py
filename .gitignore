@@ -1,7 +1,7 @@
 .pyc
 __pycache__
 -egg-info
-sonnylabs_py.egg-info
+sonnylabs.egg-info
 .env
 venv/
 test-sonnylabs.py

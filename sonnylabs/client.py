@@ -4,7 +4,7 @@ import random
 import datetime
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("sonnylabs_py")
+logger = logging.getLogger("sonnylabs")
 
 class SonnyLabsClient:
     def __init__(self, api_token, base_url, analysis_id, timeout=5):
