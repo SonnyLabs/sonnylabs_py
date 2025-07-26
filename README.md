@@ -62,13 +62,19 @@ The SonnyLabs vulnerability scanner provides a way to test your AI applications 
 
 ## Installation
 
-The package will soon be available on PyPI, but you can now install it on your system directly from GitHub:
+The package is available on PyPI and can be installed using pip:
+
+```bash
+pip install sonnylabs
+```
+
+Alternatively, you can install directly from GitHub for the latest development version:
 
 ```bash
 pip install git+https://github.com/SonnyLabs/sonnylabs_py
 ```
 
-Alternatively, you can clone the repository and install locally:
+Or clone the repository and install locally:
 
 ```bash
 git clone https://github.com/SonnyLabs/sonnylabs_py
@@ -116,7 +122,7 @@ Getting started with SonnyLabs is simple. The most important function to know is
 
 ```python
 # Install the SDK
-pip install git+https://github.com/SonnyLabs/sonnylabs_py
+pip install sonnylabs
 
 # In your application
 from sonnylabs_py import SonnyLabsClient

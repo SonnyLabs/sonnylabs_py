@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sonnylabs"
+version = "0.1.1"
+description = "Python client for the SonnyLabs AI Security Scanner - Test your AI applications for prompt injection vulnerabilities"
+readme = "README.md"
+authors = [
+    {name = "SonnyLabs", email = "liana@sonnylabs.ai"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+keywords = ["ai", "security", "prompt injection", "vulnerability", "scanner", "cybersecurity", "testing"]
+requires-python = ">=3.7"
+dependencies = [
+    "requests>=2.25.0",
+]
+
+[project.urls]
+Homepage = "https://sonnylabs.ai"
+Documentation = "https://github.com/SonnyLabs/sonnylabs_py#readme"
+Repository = "https://github.com/SonnyLabs/sonnylabs_py"
+"Bug Tracker" = "https://github.com/SonnyLabs/sonnylabs_py/issues"
