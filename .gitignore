@@ -5,3 +5,5 @@ sonnylabs_py.egg-info
 .env
 venv/
 test-sonnylabs.py
+/sonnylabs.egg-info
+/dist
