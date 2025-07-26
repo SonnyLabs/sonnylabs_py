@@ -123,7 +123,7 @@ from sonnylabs_py import SonnyLabsClient
 
 # Initialize the client with your securely stored credentials
 client = SonnyLabsClient(
-    api_key="YOUR_API_KEY",  # Replace with your actual API key or use a secure method to retrieve it
+    api_token="YOUR_API_TOKEN",  # Replace with your actual API key or use a secure method to retrieve it
     analysis_id="YOUR_ANALYSIS_ID",  # Replace with your actual ID or use a secure method to retrieve it
     base_url="https://sonnylabs-service.onrender.com"  # Optional, this is the default value
 )
@@ -153,11 +153,11 @@ This section documents all functions available in the SonnyLabsClient, their par
 ### Initialization
 
 ```python
-SonnyLabsClient(api_key, base_url, analysis_id, timeout=5)
+SonnyLabsClient(api_token, base_url, analysis_id, timeout=5)
 ```
 
 **Parameters:**
-- `api_key` (str, **required**): Your SonnyLabs API key (previously called api_token, both are supported for backward compatibility).
+- `api_token` (str, **required**): Your SonnyLabs API key (previously called api_token, both are supported for backward compatibility).
 - `base_url` (str, **required**): Base URL for the SonnyLabs API (e.g., "https://sonnylabs-service.onrender.com").
 - `analysis_id` (str, **required**): The analysis ID associated with your application.
 - `timeout` (int, optional): Request timeout in seconds. Default is 5 seconds.
@@ -221,12 +221,12 @@ from dotenv import load_dotenv
 
 # Load API key from environment (recommended)
 load_dotenv()
-api_key = os.getenv("SONNYLABS_API_KEY")
+api_token = os.getenv("SONNYLABS_API_TOKEN")
 analysis_id = os.getenv("SONNYLABS_ANALYSIS_ID")
 
 # Initialize the client with your securely stored credentials
 client = SonnyLabsClient(
-    api_key=api_key,
+    api_token=api_token,
     analysis_id=analysis_id,
     base_url="https://sonnylabs-service.onrender.com"  
 )
