@@ -101,7 +101,7 @@ def scan_messages(messages: List[Dict[str, str]], client, scan_type: str = "inpu
         score = next((item["result"] for item in result.get("analysis", [])
                      if item.get("type") == "score" and item.get("name") == "prompt_injection"), 0.0)
         
-        return ScanVerdict(is_safe=score <= threshold, score=score, scan_type=scan_type,
+        return ScanVerdict(is_safe=score < threshold, score=score, scan_type=scan_type,
                          tag=result.get("tag", ""), meta=meta or {}, raw_analysis=result.get("analysis", []))
     except Exception as e:
         logger.error(f"Error scanning messages: {str(e)}")
@@ -164,7 +164,7 @@ def scan_tool_call(user_message: str, tool_name: str, tool_args: Dict[str, Any],
     
     tool_context_parts = [f"Tool: {tool_name}"]
     if tool_schema:
-        tool_context_parts.append(f"{"Description" if isinstance(tool_schema, str) else "Schema"}: {tool_schema}")
+        tool_context_parts.append(f"{'Description' if isinstance(tool_schema, str) else 'Schema'}: {tool_schema}")
     tool_context_parts.append(f"Arguments: {str(tool_args)}")
     tool_context = "\n".join(tool_context_parts)
     
@@ -176,7 +176,7 @@ def scan_tool_call(user_message: str, tool_name: str, tool_args: Dict[str, Any],
         
         combined_score = (user_verdict.score + tool_context_verdict.score) / 2.0
         is_safe = user_verdict.is_safe and tool_context_verdict.is_safe
-        recommendation = "proceed" if is_safe else ("block" if combined_score > 0.85 else "review" if combined_score > 0.75 else "proceed")
+        recommendation = "proceed" if is_safe else ("block" if combined_score > 0.85 else "review" if combined_score >= 0.75 else "proceed")
         
         return ToolCallScanResult(is_safe=is_safe, tool_name=tool_name, user_intent_safe=user_verdict.is_safe,
                                  tool_args_safe=tool_context_verdict.is_safe, combined_score=combined_score,
