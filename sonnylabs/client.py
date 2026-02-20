@@ -1,7 +1,9 @@
+
 import requests
 import logging
 import random
 import datetime
+import helper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("sonnylabs")
@@ -131,4 +133,54 @@ class SonnyLabsClient:
         if injection_info is None:
             return False
         return injection_info["detected"]
-        
+    
+    def scan_tool_call(self, user_message, tool_name, tool_args, tool_schema=None, policy=None, meta=None):
+        """
+        Scan a tool call before execution to prevent injection-based attacks.
+        Delegates to helper.scan_tool_call.
+        """
+        return helper.scan_tool_call(
+            user_message=user_message,
+            tool_name=tool_name,
+            tool_args=tool_args,
+            client=self,
+            tool_schema=tool_schema,
+            policy=policy,
+            meta=meta
+        )
+
+    def scan_text(self, text, scan_type="input", policy=None, meta=None):
+        """
+        Scan text for prompt injection. Delegates to helper.scan_text.
+        """
+        return helper.scan_text(
+            text=text,
+            client=self,
+            scan_type=scan_type,
+            policy=policy,
+            meta=meta
+        )
+
+    def scan_messages(self, messages, scan_type="input", policy=None, meta=None):
+        """
+        Scan a list of chat messages for prompt injection. Delegates to helper.scan_messages.
+        """
+        return helper.scan_messages(
+            messages=messages,
+            client=self,
+            scan_type=scan_type,
+            policy=policy,
+            meta=meta
+        )
+
+    def scan_rag_chunks(self, query, chunks, policy=None, meta=None):
+        """
+        Scan RAG chunks for prompt injection. Delegates to helper.scan_rag_chunks.
+        """
+        return helper.scan_rag_chunks(
+            query=query,
+            chunks=chunks,
+            client=self,
+            policy=policy,
+            meta=meta
+        )
