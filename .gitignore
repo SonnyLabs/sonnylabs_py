@@ -7,3 +7,4 @@ venv/
 test-sonnylabs.py
 /sonnylabs.egg-info
 /dist
+tests/
