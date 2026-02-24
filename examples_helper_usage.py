@@ -159,23 +159,16 @@ def execute_tool_safely(
     print(f"Tool Call Scan: {result}")
     print(f"  User intent safe: {result.user_intent_safe}")
     print(f"  Tool args safe: {result.tool_args_safe}")
-    print(f"  Combined score: {result.combined_score:.2f}")
-    print(f"  Recommendation: {result.recommendation.upper()}")
+    print(f"  User context score: {result.user_context_score:.2f}")
+    print(f"  Tool context score: {result.tool_context_score:.2f}")
     
     # Decision tree based on recommendation
-    if result.recommendation == "block":
+    if not result.is_safe:
         print(f"  ✗ BLOCKING tool execution - high injection confidence")
         log_security_incident("tool_injection_blocked", 
                             f"Tool: {tool_name}, Args: {tool_args}",
                             result.user_message_verdict)
         return False
-    
-    elif result.recommendation == "review":
-        print(f"  ⚠️  REVIEW REQUIRED - suspicious but not definitive")
-        # Queue for human review or use increased logging
-        alert_security_team(tool_name, tool_args, result)
-        # Decide: allow with logging, or block
-        return True  # Example: allow with monitoring
     
     else:  # "proceed"
         print(f"  ✓ Proceeding with tool execution")

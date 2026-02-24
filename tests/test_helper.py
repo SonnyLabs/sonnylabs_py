@@ -366,7 +366,6 @@ class TestScanToolCall:
         assert result.tool_name == "search"
         assert result.user_intent_safe is True
         assert result.tool_args_safe is True
-        assert result.recommendation == "proceed"
     
     def test_scan_tool_call_unsafe_user_intent(self, mock_client):
         """Test scanning tool call with unsafe user intent"""
@@ -422,8 +421,8 @@ class TestScanToolCall:
             client=mock_client
         )
         assert result.is_safe is False
-        assert result.combined_score > 0.85
-        assert result.recommendation == "block"
+        assert result.user_context_score >= 0.65
+        assert result.tool_context_score >= 0.65
     
     def test_scan_tool_call_medium_risk_recommendation(self, mock_client):
         """Test scan_tool_call recommendation for medium-risk scores"""
@@ -441,8 +440,8 @@ class TestScanToolCall:
             client=mock_client
         )
         assert result.is_safe is False
-        assert result.combined_score == 0.75
-        assert result.recommendation == "review"
+        assert result.user_context_score >= 0.65
+        assert result.tool_context_score >= 0.65
     
     def test_scan_tool_call_with_tool_schema_string(self, safe_client):
         """Test scan_tool_call with tool schema as string"""
@@ -476,7 +475,7 @@ class TestScanToolCall:
         assert "Schema:" in tool_context
     
     def test_scan_tool_call_combined_score(self, mock_client):
-        """Test scan_tool_call calculates combined score correctly"""
+        """Test scan_tool_call calculates score correctly"""
         mock_client.analyze_text.side_effect = [
             # User message (score: 0.4)
             {"success": True, "tag": "tag1", "analysis": [{"type": "score", "name": "prompt_injection", "result": 0.4}]},
@@ -490,7 +489,8 @@ class TestScanToolCall:
             tool_args={},
             client=mock_client
         )
-        assert result.combined_score == 0.5  # (0.4 + 0.6) / 2
+        assert result.user_context_score == 0.4
+        assert result.tool_context_score == 0.6
     
     def test_scan_tool_call_with_metadata(self, safe_client):
         """Test scan_tool_call preserves metadata"""
@@ -533,8 +533,8 @@ class TestScanToolCall:
             client=mock_client
         )
         assert result.is_safe is False
-        assert result.recommendation == "block"
-        assert result.combined_score == 1.0
+        assert result.user_context_score == 1.0
+        assert result.tool_context_score == 1.0
 
 
 # ============================================================================
@@ -663,13 +663,14 @@ class TestToolCallScanResult:
             tool_name="search",
             user_intent_safe=True,
             tool_args_safe=True,
-            combined_score=0.25,
+            user_context_score=0.2,
+            tool_context_score=0.3,
             user_message_verdict=user_verdict,
             tool_context_verdict=tool_verdict,
-            recommendation="proceed"
         )
         assert result.is_safe is True
-        assert result.recommendation == "proceed"
+        assert result.user_context_score == 0.2
+        assert result.tool_context_score == 0.3
     
     def test_tool_call_scan_result_unsafe(self):
         """Test ToolCallScanResult for unsafe tool call"""
@@ -681,13 +682,12 @@ class TestToolCallScanResult:
             tool_name="execute",
             user_intent_safe=False,
             tool_args_safe=False,
-            combined_score=0.85,
+            user_context_score=0.8,
+            tool_context_score=0.9,
             user_message_verdict=user_verdict,
             tool_context_verdict=tool_verdict,
-            recommendation="block"
         )
         assert result.is_safe is False
-        assert result.recommendation == "block"
 
 
 # ============================================================================

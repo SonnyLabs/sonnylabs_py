@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import logging
 
 logger = logging.getLogger("sonnylabs.helper")
-
+_BLOCK_THRESHOLD = 0.65
 
 # ============================================================================
 # Data Classes - Return types for scanner functions
@@ -42,10 +42,10 @@ class ToolCallScanResult:
     tool_name: str
     user_intent_safe: bool
     tool_args_safe: bool
-    combined_score: float
+    user_context_score: float
+    tool_context_score: float
     user_message_verdict: ScanVerdict
     tool_context_verdict: Optional[ScanVerdict] = None
-    recommendation: str = "proceed"
 
 
 # ============================================================================
@@ -57,7 +57,7 @@ def scan_text(text: str, client, scan_type: str = "input", policy: Optional[Dict
     if not text:
         return ScanVerdict(is_safe=True, score=0.0, scan_type=scan_type, tag="empty_input", meta=meta or {})
     
-    threshold = (policy or {}).get("threshold", 0.65)
+    threshold = (policy or {}).get("threshold", _BLOCK_THRESHOLD)
     
     try:
         result = client.analyze_text(text, scan_type=scan_type)
@@ -88,7 +88,7 @@ def scan_messages(messages: List[Dict[str, str]], client, scan_type: str = "inpu
     if not messages:
         return ScanVerdict(is_safe=True, score=0.0, scan_type=scan_type, tag="empty_messages", meta=meta or {})
     
-    threshold = (policy or {}).get("threshold", 0.65)
+    threshold = (policy or {}).get("threshold", _BLOCK_THRESHOLD)
     texted_content = "\n".join([f"[{msg.get('role', 'unknown')}]: {msg.get('content', '')}" for msg in messages])
     
     try:
@@ -114,7 +114,7 @@ def scan_rag_chunks(query: str, chunks: List[Union[str, Dict[str, Any]]], client
     policy = policy or {}
     meta = meta or {}
     
-    threshold = policy.get("threshold", 0.65)
+    threshold = policy.get("threshold", _BLOCK_THRESHOLD)
     limit = policy.get("max_chunks_to_scan", len(chunks))
     
     safe_chunks = []
@@ -160,7 +160,7 @@ def scan_tool_call(user_message: str, tool_name: str, tool_args: Dict[str, Any],
                 tool_schema: Optional[Union[str, Dict[str, Any]]] = None, 
                 policy: Optional[Dict[str, Any]] = None, meta: Optional[Dict[str, Any]] = None) -> ToolCallScanResult:
     """Scan a tool call before execution to prevent injection-based attacks."""
-    threshold = (policy or {}).get("threshold", 0.65)
+    threshold = (policy or {}).get("threshold", _BLOCK_THRESHOLD)
     
     tool_context_parts = [f"Tool: {tool_name}"]
     if tool_schema:
@@ -174,13 +174,11 @@ def scan_tool_call(user_message: str, tool_name: str, tool_args: Dict[str, Any],
         tool_context_verdict = scan_text(tool_context, client, scan_type="input",
                                         policy={"threshold": threshold}, meta={**(meta or {}), "tool": tool_name, "component": "tool_context"})
         
-        combined_score = round(((user_verdict.score + tool_context_verdict.score) / 2.0), 2)
         is_safe = user_verdict.is_safe and tool_context_verdict.is_safe
-        recommendation = "proceed" if is_safe else ("block" if combined_score >= 0.85 else "review" if combined_score >= 0.50 else "proceed")
         
         return ToolCallScanResult(is_safe=is_safe, tool_name=tool_name, user_intent_safe=user_verdict.is_safe,
-                                tool_args_safe=tool_context_verdict.is_safe, combined_score=combined_score,
-                                user_message_verdict=user_verdict, tool_context_verdict=tool_context_verdict, recommendation=recommendation)
+                                tool_args_safe=tool_context_verdict.is_safe, user_context_score=user_verdict.score, tool_context_score=tool_context_verdict.score,
+                                user_message_verdict=user_verdict, tool_context_verdict=tool_context_verdict)
     except Exception as e:
         logger.error(f"Error scanning tool call: {str(e)}")
         return ToolCallScanResult(is_safe=False, tool_name=tool_name, user_intent_safe=False, tool_args_safe=False,

@@ -54,10 +54,10 @@ Tool call safety results.
 | `tool_name` | `str` |
 | `user_intent_safe` | `bool` |
 | `tool_args_safe` | `bool` |
-| `combined_score` | `float` |
+| `user_context_score` | `float` |
+| `tool_context_score` | `float` |
 | `user_message_verdict` | `ScanVerdict` |
 | `tool_context_verdict` | `ScanVerdict` |
-| `recommendation` | `str` ("proceed"/"review"/"block") |
 
 ## Scanner Functions
 
@@ -120,8 +120,8 @@ Example:
 ```python
 result = helper.scan_tool_call("Search secrets", "web_search", {"query": "hack"}, 
                                 tool_schema={"name": "web_search"}, client=scanner)
-if result.recommendation == "block":
-    print("Blocking execution!")
+if not result.is_safe:
+    return "Potential Prompt Injection Detected!"
 ```
 
 ## Policy Configuration
@@ -130,5 +130,3 @@ if result.recommendation == "block":
 policy = {"threshold": 0.5, "max_chunks_to_scan": 10}
 result = helper.scan_text("text", scanner, policy=policy)
 ```
-
-**Recommendation thresholds:** ≥0.85="block", ≥0.50="review", <0.50="proceed"
