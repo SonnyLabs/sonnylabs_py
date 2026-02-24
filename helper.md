@@ -5,7 +5,7 @@ Security scanning functions for detecting prompt injections in LLM applications.
 ## Quick Start
 
 ```python
-from sonnylabs import client, helper
+from sonnylabs import client
 
 scanner = client.SonnyLabsClient(
     api_token="your-api-token",
