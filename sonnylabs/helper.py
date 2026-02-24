@@ -174,7 +174,7 @@ def scan_tool_call(user_message: str, tool_name: str, tool_args: Dict[str, Any],
         tool_context_verdict = scan_text(tool_context, client, scan_type="input",
                                         policy={"threshold": threshold}, meta={**(meta or {}), "tool": tool_name, "component": "tool_context"})
         
-        combined_score = round(((user_verdict.score + tool_context_verdict.score) / 2.0), 1)
+        combined_score = round(((user_verdict.score + tool_context_verdict.score) / 2.0), 2)
         is_safe = user_verdict.is_safe and tool_context_verdict.is_safe
         recommendation = "proceed" if is_safe else ("block" if combined_score >= 0.85 else "review" if combined_score >= 0.50 else "proceed")
         

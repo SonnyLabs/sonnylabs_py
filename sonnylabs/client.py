@@ -1,9 +1,8 @@
-
 import requests
 import logging
 import random
 import datetime
-import helper
+from sonnylabs import helper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("sonnylabs")
