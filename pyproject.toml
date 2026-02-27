@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sonnylabs"
-version = "0.1.4"
+version = "0.1.3"
 description = "Python client for the SonnyLabs AI Security Scanner - Test your AI applications for prompt injection vulnerabilities"
 readme = "README.md"
 authors = [
